@@ -16,7 +16,7 @@ const Cart = ({ cartItems, removeFromCart, updateQuantity, clearCart }) => {
           {items.length > 0 && (
             <button 
   onClick={clearCart}
-  className=" text-red-600 px-4 py-2  hover:bg-red-400 transition"
+  className=" text-red-600 px-4 py-2 bg-white hover:bg-white transition"
 >
   Clear Cart
 </button>
