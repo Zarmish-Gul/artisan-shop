@@ -227,7 +227,6 @@ const Home = () => (
 // --- MAIN APP ---
 
 export default function App() {
-  // --- 1. STATE DEFINITIONS (Using Initializers to prevent data loss) ---
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('artisan_user');
     return saved ? JSON.parse(saved) : null;
@@ -238,44 +237,39 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [orders, setOrders] = useState(() => {
-    const saved = localStorage.getItem('artisan_orders');
-    return saved ? JSON.parse(saved) : [];
-  });
-
+  const [orders, setOrders] = useState([]);
   const [serverStatus, setServerStatus] = useState("Connecting...");
-  const clearCart = () => {
-  setCart([]); // This is the magic line that clears the UI
-  localStorage.removeItem('cart'); // Keeps it empty even if you refresh
-};
 
-  // --- 2. PERSISTENCE LOGIC (Saving only) ---
+  // Logic to clear the cart
+  const clearCart = () => {
+    setCartItems([]);
+    localStorage.removeItem('artisan_cart');
+  };
+
+  // Persist cart to localStorage
   useEffect(() => {
     localStorage.setItem('artisan_cart', JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // Fetch orders from the server on startup
-useEffect(() => {
-  const fetchOrders = async () => {
-    try {
-      const response = await fetch('http://localhost:3000/api/orders/all-orders');
-      if (response.ok) {
-        const data = await response.json();
-        setOrders(data);
-      }
-    } catch (error) {
-      console.error("Failed to fetch orders from server:", error);
-    }
-  };
-
-  fetchOrders();
-}, []); // Runs once when the app starts
-
+  // Fetch orders and check server status
   useEffect(() => {
-    localStorage.setItem('artisan_user', JSON.stringify(user));
-  }, [user]);
+    const fetchOrders = async () => {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      try {
+        const response = await fetch(`${API_URL}/api/orders/all-orders`);
+        if (response.ok) {
+          const data = await response.json();
+          setOrders(data);
+          setServerStatus("connected");
+        }
+      } catch (error) {
+        console.error("Backend offline:", error);
+        setServerStatus("Backend Offline ❌");
+      }
+    };
+    fetchOrders();
+  }, []);
 
-  // --- 3. LOGIC FUNCTIONS ---
   const addToCart = (product) => {
     setCartItems((prev) => {
       const exists = prev.find((item) => item.id === product.id);
@@ -299,126 +293,51 @@ useEffect(() => {
     ));
   };
 
-  const clearCart = () => {
-    setCartItems([]);
-  };
-
   const handleSaveOrder = async (newOrder) => {
-    const API_URL = import.meta.env.VITE_API_URL;
-  try {
-   const response = await fetch('http://localhost:3000/api/orders/place-order', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(newOrder),
-});
-
-    if (response.ok) {
-      const savedOrderFromServer = await response.json();
-      // Update state so the Admin dashboard reflects the new order immediately
-      setOrders(prev => [savedOrderFromServer, ...prev]);
-      
-    }
-  } catch (error) {
-    console.error("Backend offline, order only saved locally:", error);
-    // Fallback to local state if server is down
-    setOrders(prev => [newOrder, ...prev]);
-  }
-};
-
-  // Backend connection check
-  useEffect(() => {
-  const fetchOrders = async () => {
-    // 1. Get the URL from your environment variables
-    const API_URL = import.meta.env.VITE_API_URL;
-
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
     try {
-      const response = await fetch(`${API_URL}/api/orders/all-orders`);
-      
+      const response = await fetch(`${API_URL}/api/orders/place-order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newOrder),
+      });
       if (response.ok) {
-        const data = await response.json();
-        setOrders(data);
-        setServerStatus("connected"); // Update status on success
-      } else {
-        setServerStatus("Server Error ⚠️");
+        const savedOrder = await response.json();
+        setOrders(prev => [savedOrder, ...prev]);
       }
     } catch (error) {
-      console.error("Fetch error:", error);
-      setServerStatus("Backend Offline ❌");
+      setOrders(prev => [newOrder, ...prev]);
     }
   };
 
-  // 2. IMPORTANT: You must call the function you just created!
-  fetchOrders();
-}, []); // Empty array means this runs once when the app opens
-
   return (
-   <Router>
+    <Router>
       <div className="min-h-screen bg-white font-sans text-stone-900">
         <Navbar cartCount={cartItems.reduce((acc, item) => acc + (item.quantity || 0), 0)} />
-
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/shop" element={<Shop addToCart={addToCart} />} />
-          <Route path="/products" element={<Navigate to="/shop" replace />} />
-          <Route path="/product/:id" element={<ProductDetail addToCart={addToCart} />} />
-          
           <Route path="/cart" element={
             <Cart 
-  cartItems={cart} 
-  clearCart={clearCart} 
-  removeFromCart={removeFromCart} 
-  updateQuantity={updateQuantity} 
-/>
+              cartItems={cartItems} 
+              clearCart={clearCart} 
+              removeFromCart={removeFromCart} 
+              updateQuantity={updateQuantity} 
+            />
           } />
-
-          <Route 
-            path="/checkout" 
-            element={
-              <Checkout 
-                cartItems={cartItems} 
-                clearCart={clearCart} 
-                onSaveOrder={handleSaveOrder} 
-              />
-            } 
-          />
-
-          <Route 
-            path="/admin" 
-            element={<Admin orders={orders} />} 
-          />
-
+          <Route path="/checkout" element={
+            <Checkout cartItems={cartItems} clearCart={clearCart} onSaveOrder={handleSaveOrder} />
+          } />
+          <Route path="/admin" element={<Admin orders={orders} serverStatus={serverStatus} />} />
           <Route path="/login" element={<Login setUser={setUser} />} />
           <Route path="/blog" element={<Journal />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/product/:id" element={<ProductDetail addToCart={addToCart} />} />
         </Routes>
       </div>
-
-      <footer className="bg-stone-900 border-t border-stone-800 py-10 px-6 text-center text-stone-400 text-[10px] uppercase tracking-[0.2em]">
-        <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-center gap-4">
-          <p>© 2026 Artisan Handmade Products |</p>
-          <p>Rawalpindi Est.</p>
-        </div>
+      <footer className="bg-stone-900 py-10 text-center text-stone-400 text-[10px] uppercase tracking-widest">
+        © 2026 Artisan Handmade Products | Rawalpindi Est.
       </footer>
     </Router>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
