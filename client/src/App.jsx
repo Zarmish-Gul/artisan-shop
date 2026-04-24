@@ -244,6 +244,10 @@ export default function App() {
   });
 
   const [serverStatus, setServerStatus] = useState("Connecting...");
+  const clearCart = () => {
+  setCart([]); // This is the magic line that clears the UI
+  localStorage.removeItem('cart'); // Keeps it empty even if you refresh
+};
 
   // --- 2. PERSISTENCE LOGIC (Saving only) ---
   useEffect(() => {
@@ -360,10 +364,11 @@ useEffect(() => {
           
           <Route path="/cart" element={
             <Cart 
-              cartItems={cartItems} 
-              removeFromCart={removeFromCart} 
-              updateQuantity={updateQuantity} 
-            />
+  cartItems={cart} 
+  clearCart={clearCart} 
+  removeFromCart={removeFromCart} 
+  updateQuantity={updateQuantity} 
+/>
           } />
 
           <Route 

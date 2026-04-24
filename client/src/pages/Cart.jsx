@@ -4,11 +4,6 @@ import { Link } from 'react-router-dom';
 const Cart = ({ cartItems, removeFromCart, updateQuantity, clearCart }) => {
   const items = cartItems || [];
   const subtotal = items.reduce((acc, item) => acc + item.price * (item.quantity || 1), 0);
- const clearCart = () => {
-  setCart([]); // This empties the state
-  // Optional: If you use localStorage to save the cart, clear it too:
-  localStorage.removeItem('cart'); 
-};
   return (
     <div className="min-h-screen bg-white animate-fadeIn pb-20">
       <div className="max-w-7xl mx-auto px-6 pt-16">
