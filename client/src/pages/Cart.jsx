@@ -4,7 +4,11 @@ import { Link } from 'react-router-dom';
 const Cart = ({ cartItems, removeFromCart, updateQuantity, clearCart }) => {
   const items = cartItems || [];
   const subtotal = items.reduce((acc, item) => acc + item.price * (item.quantity || 1), 0);
-
+ const clearCart = () => {
+  setCart([]); // This empties the state
+  // Optional: If you use localStorage to save the cart, clear it too:
+  localStorage.removeItem('cart'); 
+};
   return (
     <div className="min-h-screen bg-white animate-fadeIn pb-20">
       <div className="max-w-7xl mx-auto px-6 pt-16">
@@ -16,11 +20,11 @@ const Cart = ({ cartItems, removeFromCart, updateQuantity, clearCart }) => {
           {/* Added: Clear Memory Button */}
           {items.length > 0 && (
             <button 
-              onClick={clearCart}
-              className="text-[10px] uppercase tracking-widest text-red-300 hover:text-red-500 transition-colors font-bold"
-            >
-              Clear Cart
-            </button>
+  onClick={clearCart}
+  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+>
+  Clear Cart
+</button>
           )}
         </div>
 
