@@ -20,8 +20,9 @@ app.get('/', (req, res) => {
   res.send('Artisan Backend is Online ');
 });
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  console.log(`Order data will be stored in server/orders.json`);
+// Use Render's port if available, otherwise use 5000 (or 3000)
+const PORT = process.env.PORT || 5000; 
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Server is running on port ${PORT}`);
 });
