@@ -17,11 +17,11 @@ app.use('/api/orders', orderRoutes);
 
 // Simple test to verify the server is working
 app.get('/', (req, res) => {
-  res.send('Artisan Backend is Online 🚀');
+  res.send('Artisan Backend is Online ');
 });
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📂 Order data will be stored in server/orders.json`);
+  console.log(`Server running on port ${PORT}`);
+  console.log(`Order data will be stored in server/orders.json`);
 });
