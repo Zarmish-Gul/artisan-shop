@@ -1,65 +1,60 @@
 import React, { useState } from 'react';
 
-const Login = ({ setRole }) => {
-  const [isRightPanelActive, setIsRightPanelActive] = useState(false);
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    // Check credentials
-    if (username === 'admin' && password === 'admin') {
-      setRole('admin');
-    } else {
-      // Any other login is treated as a guest
-      setRole('guest');
-    }
-  };
-
+const Login = ({ handleLogin, setUsername, setPassword }) => {
   return (
     <div className="min-h-screen bg-stone-200 flex items-center justify-center p-4">
-      <div className="relative bg-white w-[800px] max-w-full min-h-[500px] shadow-2xl overflow-hidden rounded-lg flex overflow-hidden">
+      {/* Container: Balanced and centered */}
+      <div className="bg-white w-[450px] max-w-full shadow-2xl rounded-lg overflow-hidden border border-stone-100">
         
-        {/* LEFT: SIGN IN FORM */}
-        <div className={`w-1/2 p-12 flex flex-col justify-center transition-all duration-500 ${isRightPanelActive ? 'translate-x-full opacity-0' : 'translate-x-0 opacity-100'}`}>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <h2 className="font-serif text-4xl text-stone-900 mb-2">Sign In</h2>
-            <p className="text-[10px] uppercase tracking-widest text-stone-400 mb-8">Access the Artisan Collection</p>
-            <input 
-              type="text" 
-              placeholder="Username" 
-              className="w-full p-4 bg-stone-50 border border-stone-100 focus:border-stone-900 outline-none transition-all"
-              onChange={(e) => setUsername(e.target.value)}
-            />
-            <input 
-              type="password" 
-              placeholder="Password" 
-              className="w-full p-4 bg-stone-50 border border-stone-100 focus:border-stone-900 outline-none transition-all"
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <button className="w-full bg-stone-900 text-white py-4 font-bold uppercase text-xs tracking-widest hover:bg-black transition-all">
-              Sign In
+        {/* SIGN IN FORM SECTION */}
+        <div className="p-10 md:p-14 flex flex-col justify-center">
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="text-center mb-10">
+              <h2 className="font-serif text-4xl text-stone-900 mb-3">Sign In</h2>
+              <div className="w-12 h-[1px] bg-stone-300 mx-auto mb-3"></div>
+              <p className="text-[10px] uppercase tracking-[0.3em] text-stone-400">
+                Artisan Admin Portal
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase tracking-widest text-stone-400 font-bold ml-1">Username</label>
+                <input 
+                  type="text" 
+                  placeholder="admin" 
+                  className="w-full p-4 bg-stone-50 border border-stone-100 focus:border-stone-900 outline-none transition-all text-sm"
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[9px] uppercase tracking-widest text-stone-400 font-bold ml-1">Password</label>
+                <input 
+                  type="password" 
+                  placeholder="••••••••" 
+                  className="w-full p-4 bg-stone-50 border border-stone-100 focus:border-stone-900 outline-none transition-all text-sm"
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <button 
+              type="submit"
+              className="w-full bg-stone-900 text-white py-4 font-bold uppercase text-[10px] tracking-[0.2em] hover:bg-stone-800 transition-all shadow-lg active:scale-[0.98]"
+            >
+              Enter Dashboard
             </button>
-            <p className="text-[9px] text-stone-400 mt-4 uppercase tracking-tighter">Admin: admin / admin</p>
+
+            {/* Subtle Hint for Presentation */}
+            <div className="pt-6 text-center border-t border-stone-50">
+              <p className="text-[9px] text-stone-300 uppercase tracking-widest">
+                System Access: admin / admin
+              </p>
+            </div>
           </form>
-        </div>
-
-        
-
-        {/* OVERLAY PANEL */}
-        <div className={`w-1/2 bg-stone-900 text-white p-12 flex flex-col justify-center items-center text-center transition-all duration-500 ${isRightPanelActive ? '-translate-x-full' : 'translate-x-0'}`}>
-          <h2 className="text-3xl font-serif mb-6">{isRightPanelActive ? "Already a Member?" : "New Here?"}</h2>
-          <p className="text-stone-400 text-sm mb-10 leading-relaxed">
-            {isRightPanelActive 
-              ? "To keep connected with us please login with your personal info" 
-              : "Enter your personal details and start your journey with us"}
-          </p>
-          <button 
-            onClick={() => setIsRightPanelActive(!isRightPanelActive)}
-            className="border-2 border-white px-12 py-3 uppercase text-[10px] tracking-widest font-bold hover:bg-white hover:text-stone-900 transition-all"
-          >
-            {isRightPanelActive ? "Sign In" : "Sign Up"}
-          </button>
         </div>
 
       </div>
