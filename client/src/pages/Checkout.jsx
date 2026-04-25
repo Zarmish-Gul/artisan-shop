@@ -21,12 +21,15 @@ const Checkout = ({ cartItems, clearCart, onSaveOrder }) => {
 
     // 1. CREATE THE ORDER OBJECT
     const orderData = {
-      id: `ORD-${Date.now()}`, // Using 'id' to match Admin expectations
+      id: `ORD-${Date.now()}`, 
       items: [...cartItems],
       total: total,
+      
+      // ADD THIS LINE: This puts the name where Admin.jsx can find it
+      customerName: `${customerInfo.firstName} ${customerInfo.lastName}`, 
+      
       customer: {
         ...customerInfo,
-        // Create a 'name' property so Admin.jsx can find it easily
         name: `${customerInfo.firstName} ${customerInfo.lastName}`
       },
       date: new Date().toLocaleString(),

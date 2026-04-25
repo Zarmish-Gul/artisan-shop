@@ -1,27 +1,14 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-// The "In-Memory" Product Database
-const products = [
-  { id: 1, name: 'Ceramic Plates', price: 12, category: 'Pottery', img: '/handimadepottery.jpg' },
-  { id: 2, name: 'Nordic Vase', price: 18, category: 'Pottery', img: '/Nordic.jpg' },
-  { id: 3, name: 'Ceramic Set', price: 45, category: 'Pottery', img: '/cp.jpg' },
-  { id: 4, name: 'Candle Holder', price: 34, category: 'Decor', img: '/sc.jpg' },
-  { id: 5, name: 'Knitted Cord', price: 20, category: 'Woven Crochet', img: '/kcc.jpg' },
-  { id: 6, name: 'Hanging Wall Woven', price: 50, category: 'Woven', img: '/wwh.jpg' },
-  { id: 7, name: 'Clay Wall Decore', price: 12, category: 'Decor', img: '/taoc.jpg' },
-  { id: 8, name: 'Hand Painted Vase', price: 18, category: 'Pottery', img: '/hpv.jpg' },
-  { id: 9, name: 'Silver Earings', price: 12, category: 'Jewelry', img: '/sfe.jpg' },
-  { id: 10, name: 'Glass Art', price: 18, category: 'Glass Art', img: '/glassart.jpg' },
-  { id: 11, name: 'Stone Lockets', price: 45, category: 'Jewelry', img: '/ss.jpg' },
-  { id: 12, name: 'Wooden Frame', price: 34, category: 'Wood Work', img: '/wcf.jpg' },
-];
+// REQUIRED CHANGE: We remove the hardcoded 'const products' array from here 
+// because it is now being managed in App.jsx and passed in as a prop.
 
-const Shop = ({ addToCart }) => {
+const Shop = ({ products, addToCart }) => {
   const [filter, setFilter] = useState('All');
   const [sortBy, setSortBy] = useState('Default');
 
-  // Logic: Filter by Category (Matches the categories in our array)
+  // Logic: Filter by Category
   const filteredProducts = products.filter(p => 
     filter === 'All' ? true : p.category === filter
   );
@@ -43,13 +30,12 @@ const Shop = ({ addToCart }) => {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <nav className="text-[10px] uppercase tracking-[0.3em] text-stone-400 mb-2">
-              Home &gt; <span className="text-stone-900 font-bold">Catalog</span>
+              Home <span className="text-stone-900 font-bold">Catalog</span>
             </nav>
             <h1 className="font-serif text-4xl text-stone-900 uppercase">Our Collection</h1>
           </div>
 
           <div className="flex gap-4">
-            {/* Dynamic Filter Dropdown */}
             <div className="flex flex-col">
               <label className="text-[9px] uppercase tracking-widest text-stone-400 mb-1 font-bold">Filter</label>
               <select 
@@ -103,6 +89,13 @@ const Shop = ({ addToCart }) => {
           </div>
         ))}
       </div>
+
+      {/* Empty State Logic (REQUIRED for CRUD logic) */}
+      {sortedProducts.length === 0 && (
+        <div className="text-center py-20">
+          <p className="text-stone-400 font-serif italic text-lg">No items found in this category.</p>
+        </div>
+      )}
 
       {/* FOOTER */}
       <div className="max-w-7xl mx-auto px-6 md:px-10 mt-20 flex flex-col items-center gap-6">

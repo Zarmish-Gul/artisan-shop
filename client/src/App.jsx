@@ -9,21 +9,26 @@ import Checkout from './pages/Checkout';
 import Admin from './pages/Admin';
 import Login from './pages/Login';
 
-// --- COMPONENTS ---
-
-const Navbar = ({ cartCount }) => (
+// --- NAVBAR COMPONENT ---
+const Navbar = ({ cartCount, role, setRole }) => (
   <nav className="flex flex-col md:flex-row justify-between items-center px-6 md:px-10 py-6 bg-stone-900 border-b border-stone-800 sticky top-0 z-50">
     <Link to="/" className="text-2xl font-serif font-bold text-stone-300 tracking-tight mb-4 md:mb-0 hover:text-white transition-colors">
       ARTISAN.
     </Link>
-    
     <div className="flex flex-wrap justify-center gap-4 md:gap-8 text-stone-400 font-medium text-xs uppercase tracking-widest">
       <Link to="/" className="hover:text-stone-200 transition-colors">Home</Link>
       <Link to="/shop" className="hover:text-stone-200 transition-colors">Shop</Link>
       <Link to="/blog" className="hover:text-stone-200 transition-colors">Journal</Link>
-      <Link to="/contact" className="hover:text-stone-200 transition-colors">Contact</Link>
+      {role === 'admin' && (
+        <Link to="/admin" className="text-amber-500 hover:text-amber-200 transition-colors font-bold">Dashboard</Link>
+      )}
+      <button 
+        onClick={() => { setRole(null); localStorage.removeItem('artisan_role'); }} 
+        className="text-red-400 hover:text-red-300 transition-colors uppercase text-[10px] tracking-widest font-bold"
+      >
+        Logout
+      </button>
     </div>
-    
     <Link to="/cart" className="text-stone-300 font-medium text-sm mt-4 md:mt-0 hover:text-white flex items-center gap-2">
       <span className="uppercase text-[10px] tracking-widest">Cart</span>
       <span className="bg-stone-800 px-2 py-0.5 rounded-full text-xs">({cartCount})</span>
@@ -222,122 +227,103 @@ const Home = () => (
 </section>
   </div>
 );
-  
-
+ 
 // --- MAIN APP ---
 
 export default function App() {
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem('artisan_user');
-    return saved ? JSON.parse(saved) : null;
-  });
-
-  const [cartItems, setCartItems] = useState(() => {
-    const saved = localStorage.getItem('artisan_cart');
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  const [orders, setOrders] = useState([]);
+  const [role, setRole] = useState(() => localStorage.getItem('artisan_role'));
+  const [products, setProducts] = useState(() => {
+  const saved = localStorage.getItem('artisan_products');
+  return saved ? JSON.parse(saved) : [ /* Your default products here */ ];
+});
+  const [cartItems, setCartItems] = useState([]);
+  const [orders, setOrders] = useState(() => {
+  const saved = localStorage.getItem('artisan_orders');
+  return saved ? JSON.parse(saved) : [];
+});
   const [serverStatus, setServerStatus] = useState("Connecting...");
 
-  // Logic to clear the cart
-  const clearCart = () => {
-    setCartItems([]);
-    localStorage.removeItem('artisan_cart');
-  };
+  // Logic to save role
+useEffect(() => {
+  // Save Role
+  if (role) {
+    localStorage.setItem('artisan_role', role);
+  } else {
+    localStorage.removeItem('artisan_role');
+  }
 
-  // Persist cart to localStorage
-  useEffect(() => {
-    localStorage.setItem('artisan_cart', JSON.stringify(cartItems));
-  }, [cartItems]);
+  // Save Products (Whenever you add/delete in Admin)
+  localStorage.setItem('artisan_products', JSON.stringify(products));
 
-  // Fetch orders and check server status
-  useEffect(() => {
-    const fetchOrders = async () => {
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-      try {
-        const response = await fetch(`${API_URL}/api/orders/all-orders`);
-        if (response.ok) {
-          const data = await response.json();
-          setOrders(data);
-          setServerStatus("connected");
-        }
-      } catch (error) {
-        console.error("Backend offline:", error);
-        setServerStatus("Backend Offline ❌");
-      }
-    };
-    fetchOrders();
-  }, []);
+  // Save Orders (Whenever a new order is placed)
+  localStorage.setItem('artisan_orders', JSON.stringify(orders));
+
+}, [role, products, orders]); // This runs whenever any of these 3 things change
 
   const addToCart = (product) => {
     setCartItems((prev) => {
       const exists = prev.find((item) => item.id === product.id);
       if (exists) {
-        return prev.map((item) =>
-          item.id === product.id ? { ...item, quantity: (item.quantity || 1) + 1 } : item
-        );
+        return prev.map((item) => item.id === product.id ? { ...item, quantity: (item.quantity || 1) + 1 } : item);
       }
       return [...prev, { ...product, quantity: 1 }];
     });
   };
 
-  const removeFromCart = (id) => {
-    setCartItems(prev => prev.filter(item => item.id !== id));
-  };
-
-  const updateQuantity = (id, newQty) => {
-    if (newQty < 1) return removeFromCart(id);
-    setCartItems(prev => prev.map(item => 
-      item.id === id ? { ...item, quantity: newQty } : item
-    ));
-  };
-
-  const handleSaveOrder = async (newOrder) => {
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-    try {
-      const response = await fetch(`${API_URL}/api/orders/place-order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newOrder),
-      });
-      if (response.ok) {
-        const savedOrder = await response.json();
-        setOrders(prev => [savedOrder, ...prev]);
-      }
-    } catch (error) {
-      setOrders(prev => [newOrder, ...prev]);
-    }
-  };
+  const removeFromCart = (id) => setCartItems(prev => prev.filter(item => item.id !== id));
+  const updateQuantity = (id, newQty) => setCartItems(prev => prev.map(item => item.id === id ? { ...item, quantity: Math.max(1, newQty) } : item));
+  const clearCart = () => setCartItems([]);
 
   return (
     <Router>
       <div className="min-h-screen bg-white font-sans text-stone-900">
-        <Navbar cartCount={cartItems.reduce((acc, item) => acc + (item.quantity || 0), 0)} />
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/shop" element={<Shop addToCart={addToCart} />} />
-          <Route path="/cart" element={
-            <Cart 
-              cartItems={cartItems} 
-              clearCart={clearCart} 
-              removeFromCart={removeFromCart} 
-              updateQuantity={updateQuantity} 
-            />
-          } />
-          <Route path="/checkout" element={
-            <Checkout cartItems={cartItems} clearCart={clearCart} onSaveOrder={handleSaveOrder} />
-          } />
-          <Route path="/admin" element={<Admin orders={orders} serverStatus={serverStatus} />} />
-          <Route path="/login" element={<Login setUser={setUser} />} />
-          <Route path="/blog" element={<Journal />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/product/:id" element={<ProductDetail addToCart={addToCart} />} />
-        </Routes>
+        
+        {/* IF NOT LOGGED IN: ONLY SHOW LOGIN PAGE */}
+        {!role ? (
+          <Routes>
+            <Route path="*" element={<Login setRole={setRole} />} />
+          </Routes>
+        ) : (
+          /* IF LOGGED IN: SHOW THE WHOLE SITE */
+          <>
+            <Navbar cartCount={cartItems.length} role={role} setRole={setRole} />
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route 
+  path="/shop" 
+  element={<Shop products={products} addToCart={addToCart} />} 
+/>
+              <Route path="/cart" element={
+                <Cart 
+                  cartItems={cartItems} 
+                  clearCart={clearCart} 
+                  removeFromCart={removeFromCart} 
+                  updateQuantity={updateQuantity} 
+                />
+              } />
+              <Route path="/admin" element={
+                role === 'admin' ? (
+                  <Admin 
+                    orders={orders} 
+                    serverStatus={serverStatus} 
+                    products={products} 
+                    setProducts={setProducts} 
+                  />
+                ) : (
+                  <Navigate to="/" />
+                )
+              } />
+              <Route path="/blog" element={<Journal />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/product/:id" element={<ProductDetail addToCart={addToCart} />} />
+              <Route path="/checkout" element={<Checkout cartItems={cartItems} clearCart={clearCart} onSaveOrder={(o) => setOrders([o, ...orders])} />} />
+            </Routes>
+            <footer className="bg-stone-900 py-10 text-center text-stone-400 text-[10px] uppercase tracking-widest">
+              © 2026 Artisan Handmade Products | Rawalpindi Est.
+            </footer>
+          </>
+        )}
       </div>
-      <footer className="bg-stone-900 py-10 text-center text-stone-400 text-[10px] uppercase tracking-widest">
-        © 2026 Artisan Handmade Products | Rawalpindi Est.
-      </footer>
     </Router>
   );
 }
