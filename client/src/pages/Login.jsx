@@ -44,17 +44,7 @@ const Login = ({ setRole }) => {
           </form>
         </div>
 
-        {/* RIGHT: SIGN UP FORM */}
-        <div className={`absolute top-0 left-0 w-1/2 h-full p-12 flex flex-col justify-center transition-all duration-500 bg-white ${isRightPanelActive ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0'}`}>
-           <form onSubmit={handleLogin} className="space-y-4">
-            <h2 className="font-serif text-4xl text-stone-900 mb-2">Join Us</h2>
-            <p className="text-[10px] uppercase tracking-widest text-stone-400 mb-8">Create an Artisan Account</p>
-            <input type="text" placeholder="Full Name" className="w-full p-4 bg-stone-50 border border-stone-100 outline-none" />
-            <input type="email" placeholder="Email" className="w-full p-4 bg-stone-50 border border-stone-100 outline-none" />
-            <input type="password" placeholder="Password" className="w-full p-4 bg-stone-50 border border-stone-100 outline-none" />
-            <button className="w-full bg-stone-900 text-white py-4 font-bold uppercase text-xs tracking-widest">Sign Up</button>
-          </form>
-        </div>
+        
 
         {/* OVERLAY PANEL */}
         <div className={`w-1/2 bg-stone-900 text-white p-12 flex flex-col justify-center items-center text-center transition-all duration-500 ${isRightPanelActive ? '-translate-x-full' : 'translate-x-0'}`}>
